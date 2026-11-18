@@ -1,0 +1,537 @@
+openapi: 3.0.3
+info:
+  title: SINALA API
+  version: 1.0.0
+  description: |
+    API da plataforma SINALA para reportes de conectividade em Angola.
+    As rotas administrativas exigem uma sessão com papel ADMIN.
+servers:
+  - url: /
+tags:
+  - name: Health
+  - name: Authentication
+  - name: Incidents
+  - name: Account
+  - name: Administration
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Verifica a API e a ligação à base de dados
+      responses:
+        "200":
+          description: Serviço disponível
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /api/openapi.yaml:
+    get:
+      tags: [Health]
+      summary: Obtém esta especificação OpenAPI
+      responses:
+        "200":
+          description: Especificação OpenAPI em YAML
+          content:
+            application/yaml:
+              schema:
+                type: string
+  /api/auth/session:
+    get:
+      tags: [Authentication]
+      summary: Consulta a sessão atual
+      description: Devolve null quando não existe uma sessão autenticada.
+      responses:
+        "200":
+          description: Utilizador autenticado ou null
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/User"
+                nullable: true
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/auth/login:
+    post:
+      tags: [Authentication]
+      summary: Inicia sessão
+      description: Define um cookie de sessão HttpOnly após autenticação bem-sucedida.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Credentials"
+      responses:
+        "200":
+          description: Sessão iniciada
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/auth/register:
+    post:
+      tags: [Authentication]
+      summary: Regista uma conta de cidadão
+      description: O registo público nunca cria contas administrativas.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Registration"
+      responses:
+        "201":
+          description: Conta criada e sessão iniciada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: Já existe uma conta associada ao email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/auth/logout:
+    post:
+      tags: [Authentication]
+      summary: Termina a sessão atual
+      responses:
+        "204":
+          description: Sessão terminada
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/auth/recovery:
+    post:
+      tags: [Authentication]
+      summary: Solicita recuperação de palavra-passe
+      description: Não disponível até ser configurado um serviço de email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        "501":
+          description: Recuperação de palavra-passe não configurada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /api/incidents:
+    get:
+      tags: [Incidents]
+      summary: Lista reportes públicos
+      description: Detalhes da descrição e bairro são omitidos nas respostas públicas.
+      responses:
+        "200":
+          description: Lista de reportes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Incident"
+        "500":
+          $ref: "#/components/responses/ServerError"
+    post:
+      tags: [Incidents]
+      summary: Submete um reporte de conectividade
+      description: Aceita envio anónimo ou associa o reporte à sessão autenticada.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/NewIncident"
+      responses:
+        "201":
+          description: Reporte criado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Incident"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/incidents/{reference}:
+    get:
+      tags: [Incidents]
+      summary: Consulta um reporte pela referência
+      parameters:
+        - $ref: "#/components/parameters/Reference"
+      responses:
+        "200":
+          description: Reporte encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Incident"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/account/incidents:
+    get:
+      tags: [Account]
+      summary: Lista os reportes do utilizador autenticado
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Reportes associados à conta
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Incident"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/admin/incidents:
+    get:
+      tags: [Administration]
+      summary: Lista todos os reportes com detalhes
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Reportes para administração
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Incident"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/admin/incidents/{reference}/status:
+    patch:
+      tags: [Administration]
+      summary: Actualiza o estado de um reporte
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/Reference"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateIncidentStatus"
+      responses:
+        "200":
+          description: Reporte actualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Incident"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/admin/incidents/{reference}/attachment:
+    get:
+      tags: [Administration]
+      summary: Descarrega o anexo privado de um reporte
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/Reference"
+      responses:
+        "200":
+          description: Ficheiro anexado
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: sinala_session
+  parameters:
+    Reference:
+      name: reference
+      in: path
+      required: true
+      schema:
+        type: string
+      example: SNL-2026-ABCDEFGH
+  responses:
+    BadRequest:
+      description: Pedido ou dados inválidos
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Sessão necessária ou credenciais inválidas
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Forbidden:
+      description: Origem não autorizada ou permissões insuficientes
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    TooManyRequests:
+      description: Limite de pedidos excedido
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    ServerError:
+      description: Erro interno do servidor
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    ServiceUnavailable:
+      description: Base de dados indisponível
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+  schemas:
+    Health:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          example: ok
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+    User:
+      type: object
+      required: [id, name, email, role]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [CITIZEN, ADMIN]
+    Credentials:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+    Registration:
+      allOf:
+        - $ref: "#/components/schemas/Credentials"
+        - type: object
+          required: [name]
+          properties:
+            name:
+              type: string
+              minLength: 2
+              maxLength: 100
+    NewIncident:
+      type: object
+      required: [category, description, province, municipality]
+      properties:
+        category:
+          type: string
+          enum:
+            - Internet lenta
+            - Sem ligação
+            - Interrupções frequentes
+            - Cobertura insuficiente
+            - Instabilidade
+            - Outro
+        provider:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          minLength: 12
+          maxLength: 500
+        province:
+          type: string
+          enum: [Luanda, Benguela, Huíla, Huambo, Cabinda, Namibe, Uíge, Malanje]
+        municipality:
+          type: string
+          minLength: 2
+          maxLength: 100
+        neighborhood:
+          type: string
+          maxLength: 100
+        attachment:
+          type: string
+          format: binary
+          description: JPEG, PNG ou WebP, até 5 MB.
+    UpdateIncidentStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [Recebido, Em análise, Classificado, Encerrado]
+    Incident:
+      type: object
+      required:
+        - id
+        - reference
+        - category
+        - description
+        - provider
+        - province
+        - municipality
+        - neighborhood
+        - latitude
+        - longitude
+        - createdAt
+        - status
+        - aiClassification
+        - hasAttachment
+      properties:
+        id:
+          type: string
+          format: uuid
+        reference:
+          type: string
+          example: SNL-2026-ABCDEFGH
+        category:
+          type: string
+          enum:
+            - Internet lenta
+            - Sem ligação
+            - Interrupções frequentes
+            - Cobertura insuficiente
+            - Instabilidade
+            - Outro
+        description:
+          type: string
+          description: Vazia em respostas públicas.
+        provider:
+          type: string
+        province:
+          type: string
+        municipality:
+          type: string
+        neighborhood:
+          type: string
+          description: Vazio em respostas públicas.
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        createdAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [Recebido, Em análise, Classificado, Encerrado]
+        aiClassification:
+          type: string
+        history:
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/HistoryEntry"
+        hasAttachment:
+          type: boolean
+    HistoryEntry:
+      type: object
+      required: [status, date, note]
+      properties:
+        status:
+          type: string
+        date:
+          type: string
+          format: date-time
+        note:
+          type: string

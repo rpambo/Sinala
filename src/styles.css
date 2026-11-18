@@ -1,0 +1,297 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --sinala-navy: #0a122a;
+  --sinala-blue: #536ae8;
+  --sinala-cyan: #20b9ca;
+  --sinala-teal: #42d4c3;
+  --sinala-surface: #0b1226;
+  --sinala-text: #dce7ff;
+  --sinala-muted: #8794ad;
+  --sinala-border: #293653;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--sinala-surface);
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  color: var(--sinala-text);
+  font-family: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #20b9ca66;
+  outline-offset: 2px;
+}
+
+.uk-button:focus-visible {
+  outline-color: #20b9ca;
+}
+
+.uk-card-default {
+  border-color: #293653;
+  background: #141d35;
+  color: #cbd6eb;
+}
+
+.uk-input,
+.uk-select,
+.uk-textarea {
+  border-color: #2a3855;
+  background: #0d162a;
+  color: #d5e0f5;
+}
+
+.uk-input::placeholder,
+.uk-textarea::placeholder {
+  color: #72809a;
+}
+
+.uk-table-divider > tr:not(:first-child),
+.uk-table-divider > :not(:first-child) > tr,
+.uk-table-divider > :first-child > tr:not(:first-child) {
+  border-top-color: #293653;
+}
+
+.uk-table tbody tr {
+  border-color: #293653;
+}
+
+.disclaimer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  color: #9099a8;
+  font-size: 9px;
+}
+
+.disclaimer lucide-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.how-heading .overline {
+  justify-content: center;
+  color: #289ea6;
+}
+
+::selection {
+  background: #20b9ca33;
+}
+
+app-tracking,
+app-report-incident,
+app-incidents,
+app-connectivity-map,
+app-admin-dashboard,
+app-admin-incidents,
+app-admin-analytics,
+app-ai-analysis,
+app-admin-settings {
+  background: #080f21 !important;
+  color: #dce7ff !important;
+}
+
+app-tracking h1,
+app-report-incident h1,
+app-incidents h1,
+app-connectivity-map h1,
+app-admin-dashboard h1,
+app-admin-incidents h1,
+app-admin-analytics h1,
+app-ai-analysis h1,
+app-admin-settings h1,
+app-tracking h2,
+app-report-incident h2,
+app-incidents h2,
+app-connectivity-map h2,
+app-admin-dashboard h2,
+app-admin-incidents h2,
+app-admin-analytics h2,
+app-ai-analysis h2,
+app-admin-settings h2,
+app-tracking h3,
+app-report-incident h3,
+app-incidents h3,
+app-connectivity-map h3,
+app-admin-dashboard h3,
+app-admin-incidents h3,
+app-admin-analytics h3,
+app-ai-analysis h3,
+app-admin-settings h3 {
+  color: #dce7ff !important;
+}
+
+app-tracking .page-wrap,
+app-report-incident .page-wrap,
+app-incidents .page-wrap,
+app-connectivity-map .page-wrap {
+  background: transparent !important;
+}
+
+app-tracking .uk-card-default,
+app-report-incident .uk-card-default,
+app-incidents .uk-card-default,
+app-connectivity-map .uk-card-default,
+app-admin-dashboard .uk-card-default,
+app-admin-incidents .uk-card-default,
+app-admin-analytics .uk-card-default,
+app-ai-analysis .uk-card-default,
+app-admin-settings .uk-card-default {
+  border-color: #293653 !important;
+  background: #141d35 !important;
+  color: #cbd6eb !important;
+}
+
+app-tracking p,
+app-report-incident p,
+app-incidents p,
+app-connectivity-map p,
+app-admin-dashboard p,
+app-admin-incidents p,
+app-admin-analytics p,
+app-ai-analysis p,
+app-admin-settings p {
+  color: #9aa8c1 !important;
+}
+
+app-admin-dashboard .demo-alert {
+  border-color: #51462e !important;
+  background: #292519 !important;
+  color: #dfbd72 !important;
+}
+
+app-admin-dashboard .demo-alert small {
+  color: #b6a477 !important;
+}
+
+app-admin-dashboard .kpi-card > strong {
+  color: #e0e9fb !important;
+}
+
+app-admin-dashboard .kpi-title,
+app-admin-dashboard .kpi-card > small {
+  color: #9aa8c1 !important;
+}
+
+app-admin-dashboard .chart-card,
+app-admin-dashboard .data-card,
+app-admin-dashboard .region-card {
+  border-color: #293653;
+}
+
+app-admin-dashboard .recent-table th {
+  border-color: #293653 !important;
+  color: #8797b0 !important;
+}
+
+app-admin-dashboard .recent-table td {
+  border-color: #293653 !important;
+  color: #aab8cf !important;
+}
+
+app-admin-dashboard .recent-table td strong {
+  color: #64ced9 !important;
+}
+
+app-admin-dashboard .region-row {
+  color: #aab8cf !important;
+}
+
+app-admin-dashboard .region-row strong {
+  color: #d3def0 !important;
+}
+
+app-admin-dashboard .progress {
+  background: #26324b !important;
+}
+
+app-admin-dashboard .region-total {
+  border-color: #293653 !important;
+  color: #8f9db5 !important;
+}
+
+app-admin-incidents .kpis > div {
+  border-color: #293653 !important;
+  background: #141d35 !important;
+}
+
+app-admin-incidents .kpis span {
+  color: #91a0b9 !important;
+}
+
+app-admin-incidents .kpis strong {
+  color: #e0e9fb !important;
+}
+
+app-admin-incidents .table-top,
+app-admin-incidents .table-footer {
+  color: #91a0b9 !important;
+}
+
+app-admin-incidents .table-top strong {
+  color: #dce7ff !important;
+}
+
+app-admin-incidents .export {
+  border-color: #35425e !important;
+  background: #18243d !important;
+  color: #b8c5db !important;
+}
+
+app-admin-incidents .uk-table th {
+  border-color: #293653 !important;
+  background: #10192e !important;
+  color: #91a0b9 !important;
+}
+
+app-admin-incidents .uk-table td {
+  border-color: #293653 !important;
+  color: #b0bdd2 !important;
+}
+
+app-admin-incidents .uk-table td small {
+  color: #8795ad !important;
+}
+
+app-admin-incidents .category {
+  color: #cad6e9 !important;
+}
+
+app-admin-incidents .ai-label {
+  color: #a7a0ed !important;
+}
+
+app-admin-incidents .table-footer {
+  border-color: #293653 !important;
+}
