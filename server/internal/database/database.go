@@ -10,8 +10,16 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-//go:embed 001_initial.sql
+//go:embed 001_initial.sql 002_identity.sql
 var migrations embed.FS
+
+var migrationFiles = []struct {
+	version int
+	file    string
+}{
+	{version: 1, file: "001_initial.sql"},
+	{version: 2, file: "002_identity.sql"},
+}
 
 func Open(ctx context.Context, connectionString string) (*pgxpool.Pool, error) {
 	config, err := pgxpool.ParseConfig(connectionString)
@@ -37,38 +45,40 @@ func Migrate(ctx context.Context, pool *pgxpool.Pool) error {
 		return fmt.Errorf("create migration table: %w", err)
 	}
 
-	var applied bool
-	if err := pool.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM schema_migrations WHERE version = 1)`).Scan(&applied); err != nil {
-		return fmt.Errorf("check migration version: %w", err)
-	}
-	if applied {
-		return nil
-	}
-
-	migration, err := migrations.ReadFile("001_initial.sql")
-	if err != nil {
-		return fmt.Errorf("read initial migration: %w", err)
-	}
-	tx, err := pool.Begin(ctx)
-	if err != nil {
-		return fmt.Errorf("begin migration: %w", err)
-	}
-	defer tx.Rollback(ctx)
-
-	for _, statement := range strings.Split(string(migration), ";") {
-		statement = strings.TrimSpace(statement)
-		if statement == "" {
+	for _, migration := range migrationFiles {
+		var applied bool
+		if err := pool.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM schema_migrations WHERE version = $1)`, migration.version).Scan(&applied); err != nil {
+			return fmt.Errorf("check migration version %d: %w", migration.version, err)
+		}
+		if applied {
 			continue
 		}
-		if _, err := tx.Exec(ctx, statement); err != nil {
-			return fmt.Errorf("apply initial migration: %w", err)
+
+		content, err := migrations.ReadFile(migration.file)
+		if err != nil {
+			return fmt.Errorf("read migration %s: %w", migration.file, err)
 		}
-	}
-	if _, err := tx.Exec(ctx, `INSERT INTO schema_migrations (version) VALUES (1)`); err != nil {
-		return fmt.Errorf("record migration: %w", err)
-	}
-	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("commit migration: %w", err)
+		tx, err := pool.Begin(ctx)
+		if err != nil {
+			return fmt.Errorf("begin migration %s: %w", migration.file, err)
+		}
+		for _, statement := range strings.Split(string(content), ";") {
+			statement = strings.TrimSpace(statement)
+			if statement == "" {
+				continue
+			}
+			if _, err := tx.Exec(ctx, statement); err != nil {
+				_ = tx.Rollback(ctx)
+				return fmt.Errorf("apply migration %s: %w", migration.file, err)
+			}
+		}
+		if _, err := tx.Exec(ctx, `INSERT INTO schema_migrations (version) VALUES ($1)`, migration.version); err != nil {
+			_ = tx.Rollback(ctx)
+			return fmt.Errorf("record migration %s: %w", migration.file, err)
+		}
+		if err := tx.Commit(ctx); err != nil {
+			return fmt.Errorf("commit migration %s: %w", migration.file, err)
+		}
 	}
 	return nil
 }

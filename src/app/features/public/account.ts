@@ -16,7 +16,7 @@ import { SinalaIconComponent } from '../../shared/components/lucide-icon';
         <h1>Olá, {{ auth.user()?.name }}</h1>
         <p>Acompanhe os reportes submetidos enquanto tem sessão iniciada.</p>
       </header>
-      <section class="reports-card uk-card uk-card-default">
+      <section class="reports-card sinala-card">
         <div class="card-heading">
           <div><h2>Os meus reportes</h2><p>{{ incidents.accountIncidents().length }} registos associados a esta conta</p></div>
           <a routerLink="/reportar" class="new-report"><lucide-icon name="plus"></lucide-icon>Novo reporte</a>
@@ -52,21 +52,21 @@ import { SinalaIconComponent } from '../../shared/components/lucide-icon';
     </section>
   `,
   styles: [`
-    :host { display:block; min-height:70vh; background:#f7f9fb; }
+    :host { display:block; min-height:70vh; background:#f4f6f7; }
     .account-page { max-width:900px; margin:auto; padding:48px 24px 70px; }
-    .page-heading { margin-bottom:22px; }.overline { color:#229ca5; font-size:9px; font-weight:800; letter-spacing:1px; }
-    h1 { margin:8px 0; color:#14213a; font-size:30px; letter-spacing:-.8px; }.page-heading p,.card-heading p { margin:0; color:#818c9d; font-size:11px; }
-    .reports-card { padding:20px; border:1px solid #e8edf1; border-radius:10px; }
-    .card-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-bottom:16px; border-bottom:1px solid #edf0f3; }
-    .card-heading h2 { margin:0 0 5px; color:#1e2a43; font-size:15px; }
-    .new-report { display:inline-flex; align-items:center; gap:6px; padding:9px 11px; border-radius:6px; background:#0a122a; color:#fff; font-size:9px; font-weight:700; text-decoration:none; white-space:nowrap; }
+    .page-heading { margin-bottom:22px; }.overline { color:#0060c0; font-size:11px; font-weight:800; letter-spacing:1px; }
+    h1 { margin:8px 0; color:#00163f; font-size:30px; letter-spacing:-.8px; }.page-heading p,.card-heading p { margin:0; color:#62748a; font-size:11px; }
+    .reports-card { padding:20px; border:1px solid #dbe3e7; border-radius:10px; }
+    .card-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-bottom:16px; border-bottom:1px solid #e6edf0; }
+    .card-heading h2 { margin:0 0 5px; color:#00163f; font-size:15px; }
+    .new-report { display:inline-flex; align-items:center; gap:6px; padding:9px 11px; border-radius:6px; background:#00163f; color:#fff; font-size:11px; font-weight:700; text-decoration:none; white-space:nowrap; }
     .new-report lucide-icon,.report-row a lucide-icon { width:13px; height:13px; }
-    .report-list { display:grid; }.report-row { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:20px; padding:16px 0; border-bottom:1px solid #f0f2f5; }
-    .report-main { display:grid; gap:5px; }.report-main strong { color:#208d97; font-size:10px; }.report-main span { color:#38445b; font-size:11px; }.report-main small { color:#8d97a7; font-size:9px; }
-    .status { padding:6px 8px; border-radius:5px; background:#eef2ff; color:#596bd2; font-size:9px; font-weight:700; white-space:nowrap; }
-    .report-row a { display:inline-flex; align-items:center; gap:5px; color:#2199a3; text-decoration:none; font-size:9px; font-weight:700; white-space:nowrap; }
-    .empty { display:grid; justify-items:center; gap:8px; padding:38px 12px; color:#8c97a7; text-align:center; font-size:10px; }.empty lucide-icon { width:22px; height:22px; color:#239ba5; }.empty strong { color:#34405a; font-size:12px; }
-    .feedback { padding:13px 0; color:#647086; font-size:10px; }.feedback.error { color:#a64e47; }
+    .report-list { display:grid; }.report-row { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:20px; padding:16px 0; border-bottom:1px solid #eef2f4; }
+    .report-main { display:grid; gap:5px; }.report-main strong { color:#0060c0; font-size:12px; }.report-main span { color:#38445b; font-size:11px; }.report-main small { color:#62748a; font-size:11px; }
+    .status { padding:6px 8px; border-radius:5px; background:#e9f2ff; color:#003090; font-size:11px; font-weight:700; white-space:nowrap; }
+    .report-row a { display:inline-flex; align-items:center; gap:5px; min-height:32px; color:#0060c0; text-decoration:none; font-size:11px; font-weight:700; white-space:nowrap; }
+    .empty { display:grid; justify-items:center; gap:8px; padding:38px 12px; color:#8c97a7; text-align:center; font-size:12px; }.empty lucide-icon { width:22px; height:22px; color:#0060c0; }.empty strong { color:#29415a; font-size:12px; }
+    .feedback { padding:13px 0; color:#647086; font-size:12px; }.feedback.error { color:#a64e47; }
     @media(max-width:600px) { .account-page { padding:34px 14px 50px; }.reports-card { padding:14px; }.report-row { grid-template-columns:1fr auto; gap:8px; }.report-row a { grid-column:1/-1; }.card-heading { align-items:flex-start; flex-direction:column; } }
   `],
 })

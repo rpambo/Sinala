@@ -18,8 +18,23 @@ echarts.use([
 @Component({
   selector: 'app-analytics-chart',
   standalone: true,
-  template: '<div #chart class="chart-canvas" role="img" [attr.aria-label]="title"></div>',
-  styles: [':host { display: block; min-width: 0; } .chart-canvas { width: 100%; height: 250px; }'],
+  template: `
+    <div #chart class="chart-canvas" aria-hidden="true"></div>
+    <table class="sr-only">
+      <caption>{{ title }}</caption>
+      <thead><tr><th scope="col">Categoria</th><th scope="col">Valor</th></tr></thead>
+      <tbody>
+        @for (label of labels; track $index) {
+          <tr><th scope="row">{{ label }}</th><td>{{ values[$index] }}</td></tr>
+        }
+      </tbody>
+    </table>
+  `,
+  styles: [`
+    :host { display: block; min-width: 0; }
+    .chart-canvas { width: 100%; height: 250px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; padding: 0; border: 0; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+  `],
 })
 export class AnalyticsChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() title = 'Gráfico de análise';
@@ -49,12 +64,12 @@ export class AnalyticsChartComponent implements AfterViewInit, OnChanges, OnDest
 
   private render(): void {
     if (!this.chart) return;
-    const palette = ['#21b8c8', '#536ae8', '#8bd8d4', '#98a3b8', '#e8b05f'];
+    const palette = ['#5cc8ff', '#00a8f0', '#0090f0', '#8fb4d8', '#e8b05f'];
     const option: EChartsCoreOption = this.type === 'pie'
       ? {
           color: palette,
           tooltip: { trigger: 'item' },
-          legend: { bottom: 0, textStyle: { color: '#687286' } },
+          legend: { bottom: 0, textStyle: { color: '#cbd6eb' } },
           series: [{
             type: 'pie',
             radius: ['55%', '78%'],
@@ -64,20 +79,20 @@ export class AnalyticsChartComponent implements AfterViewInit, OnChanges, OnDest
           }],
         }
       : {
-          color: [this.type === 'line' ? '#20b9ca' : '#536ae8'],
+          color: [this.type === 'line' ? '#00a8f0' : '#5cc8ff'],
           grid: { left: 36, right: 16, top: 20, bottom: 30 },
           tooltip: { trigger: 'axis' },
           xAxis: {
             type: 'category',
             data: this.labels,
             boundaryGap: this.type === 'bar',
-            axisLabel: { color: '#8992a4' },
-            axisLine: { lineStyle: { color: '#e8edf2' } },
+            axisLabel: { color: '#b8c7dd' },
+            axisLine: { lineStyle: { color: '#1e3b68' } },
           },
           yAxis: {
             type: 'value',
-            axisLabel: { color: '#8992a4' },
-            splitLine: { lineStyle: { color: '#edf1f4' } },
+            axisLabel: { color: '#b8c7dd' },
+            splitLine: { lineStyle: { color: '#1e3b68' } },
           },
           series: [{
             type: this.type,
@@ -85,7 +100,7 @@ export class AnalyticsChartComponent implements AfterViewInit, OnChanges, OnDest
             smooth: this.type === 'line',
             symbolSize: 7,
             lineStyle: { width: 3 },
-            areaStyle: this.type === 'line' ? { color: 'rgba(32,185,202,.10)' } : undefined,
+            areaStyle: this.type === 'line' ? { color: 'rgba(0,144,240,.10)' } : undefined,
             itemStyle: { borderRadius: this.type === 'bar' ? [6, 6, 0, 0] : 0 },
           }],
         };

@@ -1,5 +1,18 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { CanActivateFn, Router, Routes } from '@angular/router';
 import { adminGuard, authGuard } from './core/guards/admin.guard';
+import { AuthService } from './core/services/auth.service';
+
+const redirectAuthenticated: CanActivateFn = async () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  try {
+    const user = await auth.refreshSession();
+    return user ? router.createUrlTree([user.role === 'ADMIN' ? '/admin' : '/conta']) : true;
+  } catch {
+    return true;
+  }
+};
 
 export const routes: Routes = [
   {
@@ -14,7 +27,9 @@ export const routes: Routes = [
       { path: 'mapa', loadComponent: () => import('./features/public/connectivity-map').then((module) => module.ConnectivityMapComponent) },
     ],
   },
-  { path: 'auth', loadComponent: () => import('./features/auth/login').then((module) => module.LoginComponent) },
+  { path: 'auth', loadComponent: () => import('./features/auth/login').then((module) => module.LoginComponent), canActivate: [redirectAuthenticated] },
+  { path: 'verificar-email', loadComponent: () => import('./features/auth/verify-email').then((module) => module.VerifyEmailComponent) },
+  { path: 'redefinir-password', loadComponent: () => import('./features/auth/reset-password').then((module) => module.ResetPasswordComponent) },
   {
     path: 'admin',
     loadComponent: () => import('./layouts/admin-layout').then((module) => module.AdminLayoutComponent),

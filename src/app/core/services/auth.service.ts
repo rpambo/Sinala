@@ -12,6 +12,11 @@ export interface AuthUser {
   role: UserRole;
 }
 
+export interface AuthMessage {
+  message: string;
+  email?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
@@ -48,20 +53,29 @@ export class AuthService {
     const user = await firstValueFrom(this.http.post<AuthUser>(
       `${environment.apiBaseUrl}/auth/login`, { email, password }, { withCredentials: true },
     ));
-    this.sessionRequest = Promise.resolve(user);
-    this.user.set(user);
-    this.error.set('');
+    this.setAuthenticated(user);
     return user;
   }
 
-  async register(name: string, email: string, password: string): Promise<AuthUser> {
-    const user = await firstValueFrom(this.http.post<AuthUser>(
+  async register(name: string, email: string, password: string): Promise<AuthMessage> {
+    const result = await firstValueFrom(this.http.post<AuthMessage>(
       `${environment.apiBaseUrl}/auth/register`, { name, email, password }, { withCredentials: true },
     ));
-    this.sessionRequest = Promise.resolve(user);
-    this.user.set(user);
-    this.error.set('');
+    return result;
+  }
+
+  async verifyEmail(token: string): Promise<AuthUser> {
+    const user = await firstValueFrom(this.http.post<AuthUser>(
+      `${environment.apiBaseUrl}/auth/verify`, { token }, { withCredentials: true },
+    ));
+    this.setAuthenticated(user);
     return user;
+  }
+
+  async resendVerification(email: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(
+      `${environment.apiBaseUrl}/auth/verification/resend`, { email }, { withCredentials: true },
+    ));
   }
 
   async requestRecovery(email: string): Promise<void> {
@@ -70,11 +84,32 @@ export class AuthService {
     ));
   }
 
-  async signOut(): Promise<void> {
+  async resetPassword(token: string, password: string): Promise<void> {
     await firstValueFrom(this.http.post<void>(
-      `${environment.apiBaseUrl}/auth/logout`, {}, { withCredentials: true },
+      `${environment.apiBaseUrl}/auth/reset`, { token, password }, { withCredentials: true },
     ));
+    this.clearSessionLocally();
+  }
+
+  async signOut(): Promise<void> {
+    try {
+      await firstValueFrom(this.http.post<void>(
+        `${environment.apiBaseUrl}/auth/logout`, {}, { withCredentials: true },
+      ));
+    } finally {
+      this.clearSessionLocally();
+    }
+  }
+
+  clearSessionLocally(message = ''): void {
     this.sessionRequest = Promise.resolve(null);
     this.user.set(null);
+    this.error.set(message);
+  }
+
+  private setAuthenticated(user: AuthUser): void {
+    this.sessionRequest = Promise.resolve(user);
+    this.user.set(user);
+    this.error.set('');
   }
 }

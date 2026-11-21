@@ -1,6 +1,6 @@
 # SINALA
 
-Plataforma comunitária de relatos sobre conectividade em Angola. O frontend usa Angular, UIkit, Leaflet/OpenStreetMap e ECharts; a API usa Go e PostgreSQL.
+Plataforma comunitária de relatos sobre conectividade em Angola. O frontend usa Angular e CSS puro, Leaflet/OpenStreetMap e ECharts; a API usa Go e PostgreSQL.
 
 ## Requisitos
 
@@ -52,7 +52,22 @@ Copie `server/.env.example` para `server/.env` e configure `DATABASE_URL` com as
 Copy-Item server\.env.example server\.env
 ```
 
-Execute a migração inicial:
+Configure ainda o serviço de email em `server/.env` (ou no ambiente). O registo e a recuperação de palavra-passe dependem dele:
+
+```text
+APP_PUBLIC_URL=http://localhost:4200
+SMTP_HOST=smtp.exemplo.ao
+SMTP_PORT=587
+SMTP_USER=...
+SMTP_PASSWORD=...
+SMTP_FROM=SINALA <nao-responder@exemplo.ao>
+VERIFICATION_TOKEN_TTL=24h
+RECOVERY_TOKEN_TTL=30m
+```
+
+Use `SMTP_PORT=465` para TLS implícito; nos outros casos o cliente usa STARTTLS quando o servidor o anuncia. Nunca coloque credenciais SMTP no código.
+
+Execute as migrações:
 
 ```bash
 npm run db:migrate
@@ -60,7 +75,7 @@ npm run db:migrate
 
 ## Criar o primeiro administrador
 
-Defina temporariamente `SINALA_ADMIN_EMAIL`, `SINALA_ADMIN_PASSWORD` (mínimo 12 caracteres) e, opcionalmente, `SINALA_ADMIN_NAME` no ambiente ou em `server/.env`. Depois:
+Defina temporariamente `SINALA_ADMIN_EMAIL`, `SINALA_ADMIN_PASSWORD` (12 a 72 bytes) e, opcionalmente, `SINALA_ADMIN_NAME` no ambiente ou em `server/.env`. Depois:
 
 ```bash
 npm run admin:create
@@ -86,12 +101,13 @@ Em produção, configure o proxy reverso para encaminhar `/api` ao servidor Go, 
 
 ## Funcionalidades ligadas
 
-- Registo e login com palavra-passe bcrypt, sessão opaca armazenada no PostgreSQL, reportes associados à conta autenticada e autorização administrativa no servidor.
+- Registo com verificação de email obrigatória, login com palavra-passe bcrypt (8 a 72 bytes), sessão opaca armazenada no PostgreSQL, reportes associados à conta autenticada e autorização administrativa no servidor.
+- Recuperação de palavra-passe por email com token de uso único e válido por 30 minutos; a redefinição revoga todas as sessões da conta.
 - Submissão e consulta de reportes, histórico de estados e atualização administrativa persistidos no PostgreSQL.
 - Anexos JPEG, PNG e WebP até 5 MB, guardados como dados binários e disponibilizados apenas à administração.
 - Métricas do painel calculadas a partir de reportes reais; os exemplos/métricas artificiais foram removidos.
 
-A recuperação de palavra-passe ainda não está implementada, e a API informa explicitamente essa limitação. A classificação automática por IA também não está configurada; a página administrativa identifica as comparações actuais como heurísticas. Os reportes comunitários não confirmam avarias de rede, e as localizações são aproximadas.
+Sem `SMTP_HOST` e `SMTP_FROM` configurados, o registo devolve `503` e não cria contas inactivas; a recuperação mantém uma resposta genérica para não revelar contas existentes. A classificação automática por IA também não está configurada; a página administrativa identifica as comparações actuais como heurísticas. Os reportes comunitários não confirmam avarias de rede, e as localizações são aproximadas.
 
 ## Testes
 

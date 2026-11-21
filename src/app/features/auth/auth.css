@@ -1,0 +1,28 @@
+:host { display: block; min-height: 100vh; background: #f4f6f7; }
+.auth-page { min-height: 100vh; display: flex; align-items: center; flex-direction: column; padding: 46px 16px 30px; }
+.brand { display: flex; align-items: center; margin-bottom: 25px; text-decoration: none; }
+.brand img { display: block; width: 132px; height: auto; }
+.auth-card { width: min(430px, 100%); padding: 25px; border: 1px solid #dbe3e7; border-radius: 12px; box-shadow: 0 12px 40px #00163f08; }
+.tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 25px; padding: 4px; border-radius: 7px; background: #eef2f4; }
+.tabs button { border: 0; border-radius: 5px; padding: 9px; background: transparent; color: #8490a2; font-size: 12px; font-weight: 700; cursor: pointer; }
+.tabs button.active { background: #fff; color: #26334c; box-shadow: 0 1px 5px #00163f10; }
+.overline { color: #0060c0; font-size: 12px; font-weight: 800; letter-spacing: 1px; }
+.auth-heading { margin-bottom: 20px; }
+.auth-heading h1 { margin: 8px 0 6px; color: #00163f; font-size: 23px; letter-spacing: -.7px; }
+.auth-heading p { margin: 0; color: #62748a; font-size: 12px; line-height: 1.6; }
+label { display: block; margin: 15px 0 6px; color: #29415a; font-size: 11px; font-weight: 700; }
+.form-control { height: 44px; border-color: #dbe3e7; border-radius: 6px; font-size: 16px; }
+.error { display: block; margin-top: 5px; color: #bf534c; font-size: 12px; }
+.hint { display: block; margin-top: 5px; color: #62748a; font-size: 11px; line-height: 1.5; }
+.forgot, .back-link { display: flex; align-items: center; justify-content: flex-end; min-height: 32px; margin: 10px 0 0 auto; border: 0; background: none; color: #0060c0; font-size: 11px; cursor: pointer; }
+.submit { width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; min-height: 40px; margin-top: 18px; border-radius: 6px; background: #00163f; border-color: #00163f; color: #fff; font-size: 12px; font-weight: 700; text-transform: none; }
+.submit lucide-icon { width: 13px; height: 13px; }
+.back-link { margin: 14px 0 0; padding: 0; }
+.feedback { display: grid; grid-template-columns: 16px 1fr; gap: 7px; margin-top: 17px; padding: 10px; border-radius: 7px; background: #eff8f4; color: #32845f; font-size: 11px; line-height: 1.5; }
+.feedback lucide-icon { width: 14px; height: 14px; }
+.feedback a { grid-column: 2; color: #178d79; font-weight: 700; text-decoration: none; min-height: 32px; display: inline-flex; align-items: center; }
+.feedback button { grid-column: 2; justify-self: start; min-height: 32px; padding: 0; border: 0; background: none; color: #0060c0; font-size: 11px; font-weight: 700; cursor: pointer; text-decoration: underline; }
+.feedback.error-feedback { background: #fff3f1; color: #a64e47; }
+.auth-footer { max-width: 430px; margin: 15px auto 0; color: #62748a; font-size: 12px; line-height: 1.6; text-align: center; }
+.auth-footer a { display: inline-flex; align-items: center; min-height: 32px; color: #0060c0; text-decoration: none; }
+@media (max-width: 420px) { .auth-page { padding: 28px 12px 24px; } .auth-card { padding: 20px; } }

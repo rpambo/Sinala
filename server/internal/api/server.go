@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
+	"sinala/server/internal/mailer"
 )
 
 type Config struct {
@@ -16,6 +17,7 @@ type Config struct {
 	CookieSecure bool
 	SessionTTL   time.Duration
 	TrustProxy   bool
+	Mail         mailer.Config
 }
 
 type Server struct {
@@ -49,7 +51,10 @@ func New(pool *pgxpool.Pool, config Config) http.Handler {
 	router.With(server.rateLimit(10, time.Minute)).Post("/api/auth/login", server.login)
 	router.With(server.rateLimit(5, time.Minute)).Post("/api/auth/register", server.register)
 	router.Post("/api/auth/logout", server.logout)
+	router.With(server.rateLimit(5, time.Minute)).Post("/api/auth/verify", server.verifyEmail)
+	router.With(server.rateLimit(5, time.Minute)).Post("/api/auth/verification/resend", server.resendVerification)
 	router.With(server.rateLimit(5, time.Minute)).Post("/api/auth/recovery", server.recovery)
+	router.With(server.rateLimit(10, time.Minute)).Post("/api/auth/reset", server.resetPassword)
 	router.Get("/api/incidents", server.listPublicIncidents)
 	router.Post("/api/incidents", server.createIncident)
 	router.Get("/api/incidents/{reference}", server.getIncident)

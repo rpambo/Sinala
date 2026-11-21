@@ -1,0 +1,59 @@
+<main class="auth-page">
+  <a routerLink="/" class="brand" aria-label="SINALA — página inicial"><img src="/assets/images/sinala-logo.png" alt="" width="538" height="188" fetchpriority="high" /></a>
+  <section class="auth-card sinala-card">
+    @if (mode() !== 'recovery') {
+      <div class="tabs"><button type="button" [class.active]="mode() === 'login'" (click)="setMode('login')">Entrar</button><button type="button" [class.active]="mode() === 'register'" (click)="setMode('register')">Criar conta</button></div>
+    }
+    @if (mode() === 'login') {
+      <div class="auth-heading"><span class="overline">BEM-VINDO DE VOLTA</span><h1>Entrar na SINALA</h1><p>Entre para aceder à sua conta SINALA.</p></div>
+      <form [formGroup]="loginForm" (ngSubmit)="submitLogin()">
+        <label for="email">Email</label>
+        <input id="email" type="email" class="form-control" formControlName="email" placeholder="nome&#64;exemplo.ao" autocomplete="email" [attr.aria-invalid]="loginForm.controls.email.touched && loginForm.controls.email.invalid" [attr.aria-describedby]="loginForm.controls.email.touched && loginForm.controls.email.invalid ? 'login-email-error' : null" />
+        @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) { <small id="login-email-error" class="error" role="alert">Introduza um email válido.</small> }
+        <label for="password">Palavra-passe</label>
+        <input id="password" type="password" class="form-control" formControlName="password" placeholder="A sua palavra-passe" autocomplete="current-password" [attr.aria-invalid]="loginForm.controls.password.touched && loginForm.controls.password.invalid" [attr.aria-describedby]="loginForm.controls.password.touched && loginForm.controls.password.invalid ? 'login-password-error' : null" />
+        @if (loginForm.controls.password.touched && loginForm.controls.password.invalid) { <small id="login-password-error" class="error" role="alert">Introduza a sua palavra-passe.</small> }
+        <button type="button" class="forgot" (click)="setMode('recovery')">Esqueceu-se da palavra-passe?</button>
+        <button type="submit" class="button button-primary submit" [disabled]="busy()">{{ busy() ? 'A validar…' : 'Entrar' }} <lucide-icon name="arrow-right"></lucide-icon></button>
+      </form>
+    } @else if (mode() === 'register') {
+      <div class="auth-heading"><span class="overline">FAÇA PARTE DA COMUNIDADE</span><h1>Criar uma conta</h1><p>Registe-se para acompanhar os seus reportes. Terá de confirmar o email antes de entrar.</p></div>
+      <form [formGroup]="registerForm" (ngSubmit)="submitRegister()">
+        <label for="name">Nome</label>
+        <input id="name" class="form-control" formControlName="name" placeholder="O seu nome" autocomplete="name" [attr.aria-invalid]="registerForm.controls.name.touched && registerForm.controls.name.invalid" [attr.aria-describedby]="registerForm.controls.name.touched && registerForm.controls.name.invalid ? 'reg-name-error' : null" />
+        @if (registerForm.controls.name.touched && registerForm.controls.name.invalid) { <small id="reg-name-error" class="error" role="alert">Indique um nome com pelo menos 2 caracteres.</small> }
+        <label for="reg-email">Email</label>
+        <input id="reg-email" type="email" class="form-control" formControlName="email" placeholder="nome&#64;exemplo.ao" autocomplete="email" [attr.aria-invalid]="registerForm.controls.email.touched && registerForm.controls.email.invalid" [attr.aria-describedby]="registerForm.controls.email.touched && registerForm.controls.email.invalid ? 'reg-email-error' : null" />
+        @if (registerForm.controls.email.touched && registerForm.controls.email.invalid) { <small id="reg-email-error" class="error" role="alert">Introduza um email válido.</small> }
+        <label for="reg-password">Palavra-passe</label>
+        <input id="reg-password" type="password" class="form-control" formControlName="password" autocomplete="new-password" [attr.aria-invalid]="registerForm.controls.password.touched && registerForm.controls.password.invalid" [attr.aria-describedby]="registerForm.controls.password.touched && registerForm.controls.password.invalid ? 'password-hint reg-password-error' : 'password-hint'" />
+        <small id="password-hint" class="hint">{{ passwordHint }}</small>
+        @if (registerForm.controls.password.touched && registerForm.controls.password.invalid) { <small id="reg-password-error" class="error" role="alert">A palavra-passe não cumpre o formato exigido.</small> }
+        <label for="reg-confirmation">Confirmar palavra-passe</label>
+        <input id="reg-confirmation" type="password" class="form-control" formControlName="confirmation" autocomplete="new-password" [attr.aria-invalid]="registerForm.controls.confirmation.touched && registerForm.hasError('passwordMismatch')" [attr.aria-describedby]="registerForm.controls.confirmation.touched && registerForm.hasError('passwordMismatch') ? 'reg-confirmation-error' : null" />
+        @if (registerForm.controls.confirmation.touched && registerForm.hasError('passwordMismatch')) { <small id="reg-confirmation-error" class="error" role="alert">As palavras-passe não coincidem.</small> }
+        <button type="submit" class="button button-primary submit" [disabled]="busy()">{{ busy() ? 'A criar conta…' : 'Criar conta' }} <lucide-icon name="arrow-right"></lucide-icon></button>
+      </form>
+    } @else {
+      <div class="auth-heading"><span class="overline">RECUPERAÇÃO DE ACESSO</span><h1>Recuperar palavra-passe</h1><p>Indique o email associado à sua conta. Se existir, enviaremos um link válido por 30 minutos.</p></div>
+      <form [formGroup]="recoveryForm" (ngSubmit)="submitRecovery()">
+        <label for="recovery-email">Email</label>
+        <input id="recovery-email" type="email" class="form-control" formControlName="email" placeholder="nome&#64;exemplo.ao" autocomplete="email" [attr.aria-invalid]="recoveryForm.controls.email.touched && recoveryForm.controls.email.invalid" [attr.aria-describedby]="recoveryForm.controls.email.touched && recoveryForm.controls.email.invalid ? 'recovery-email-error' : null" />
+        @if (recoveryForm.controls.email.touched && recoveryForm.controls.email.invalid) { <small id="recovery-email-error" class="error" role="alert">Introduza um email válido.</small> }
+        <button type="submit" class="button button-primary submit" [disabled]="busy()">{{ busy() ? 'A enviar…' : 'Enviar instruções' }} <lucide-icon name="arrow-right"></lucide-icon></button>
+      </form>
+      <button type="button" class="back-link" (click)="setMode('login')">Voltar a entrar</button>
+    }
+    @if (message()) {
+      <div class="feedback" role="status"><lucide-icon name="circle-check-big"></lucide-icon><span>{{ message() }}</span>
+        @if (mode() === 'register') { <a routerLink="/auth">Voltar a entrar</a> }
+      </div>
+    }
+    @if (needsVerification()) {
+      <div class="feedback" role="status"><lucide-icon name="mail"></lucide-icon><span>Ainda não confirmou o seu email.</span><button type="button" (click)="resendVerification()" [disabled]="busy()">Reenviar email de verificação</button></div>
+    }
+    @if (auth.error() && mode() === 'login' && !needsVerification()) { <div class="feedback error-feedback" role="alert"><lucide-icon name="circle-alert"></lucide-icon><span>{{ auth.error() }}</span></div> }
+    @if (errorMessage()) { <div class="feedback error-feedback" role="alert"><lucide-icon name="circle-alert"></lucide-icon><span>{{ errorMessage() }}</span></div> }
+  </section>
+  <p class="auth-footer">A sua sessão é protegida pela SINALA. <a routerLink="/">Voltar ao portal</a></p>
+</main>

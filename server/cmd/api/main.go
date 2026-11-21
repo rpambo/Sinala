@@ -14,7 +14,20 @@ import (
 	"sinala/server/internal/api"
 	"sinala/server/internal/config"
 	"sinala/server/internal/database"
+	"sinala/server/internal/mailer"
 )
+
+func envDuration(name string, fallback time.Duration) time.Duration {
+	value := os.Getenv(name)
+	if value == "" {
+		return fallback
+	}
+	duration, err := time.ParseDuration(value)
+	if err != nil || duration <= 0 {
+		log.Fatalf("%s must be a positive duration", name)
+	}
+	return duration
+}
 
 func main() {
 	if err := config.LoadEnvironment(); err != nil {
@@ -51,11 +64,28 @@ func main() {
 		}
 	}
 
+	appURL := strings.TrimRight(os.Getenv("APP_PUBLIC_URL"), "/")
+	if appURL == "" {
+		appURL = webOrigin
+	}
+	verificationTTL := envDuration("VERIFICATION_TOKEN_TTL", 24*time.Hour)
+	resetTTL := envDuration("RECOVERY_TOKEN_TTL", 30*time.Minute)
+
 	handler := api.New(pool, api.Config{
 		WebOrigin:    webOrigin,
 		CookieSecure: cookieSecure,
 		SessionTTL:   sessionTTL,
 		TrustProxy:   trustProxy,
+		Mail: mailer.Config{
+			Host:            os.Getenv("SMTP_HOST"),
+			Port:            os.Getenv("SMTP_PORT"),
+			User:            os.Getenv("SMTP_USER"),
+			Password:        os.Getenv("SMTP_PASSWORD"),
+			From:            os.Getenv("SMTP_FROM"),
+			AppURL:          appURL,
+			VerificationTTL: verificationTTL,
+			ResetTTL:        resetTTL,
+		},
 	})
 	server := &http.Server{
 		Addr:              address,

@@ -1,0 +1,15 @@
+<main class="auth-page">
+  <a routerLink="/" class="brand" aria-label="SINALA — página inicial"><img src="/assets/images/sinala-logo.png" alt="" width="538" height="188" fetchpriority="high" /></a>
+  <section class="auth-card sinala-card">
+    <div class="auth-heading"><span class="overline">VERIFICAÇÃO DE EMAIL</span><h1>Confirmar email</h1><p>Estamos a validar o link de verificação da sua conta.</p></div>
+    @if (state() === 'loading') {
+      <div class="feedback" role="status"><lucide-icon name="loader-circle"></lucide-icon><span>{{ message() || 'A confirmar…' }}</span></div>
+    } @else if (state() === 'done') {
+      <div class="feedback" role="status"><lucide-icon name="circle-check-big"></lucide-icon><span>{{ message() }}</span></div>
+    } @else {
+      <div class="feedback error-feedback" role="alert"><lucide-icon name="circle-alert"></lucide-icon><span>{{ message() }}</span></div>
+      <button type="button" class="submit" (click)="verify()">Tentar novamente</button>
+      <p class="auth-footer"><a routerLink="/auth">Voltar a entrar</a></p>
+    }
+  </section>
+</main>

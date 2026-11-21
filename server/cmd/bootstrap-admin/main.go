@@ -22,8 +22,8 @@ func main() {
 	email := strings.ToLower(strings.TrimSpace(os.Getenv("SINALA_ADMIN_EMAIL")))
 	password := os.Getenv("SINALA_ADMIN_PASSWORD")
 	name := strings.TrimSpace(os.Getenv("SINALA_ADMIN_NAME"))
-	if databaseURL == "" || email == "" || len(password) < 12 {
-		log.Fatal("Set DATABASE_URL, SINALA_ADMIN_EMAIL, and SINALA_ADMIN_PASSWORD (at least 12 characters).")
+	if databaseURL == "" || email == "" || len([]byte(password)) < 12 || len([]byte(password)) > 72 {
+		log.Fatal("Set DATABASE_URL, SINALA_ADMIN_EMAIL, and SINALA_ADMIN_PASSWORD (12 to 72 bytes).")
 	}
 	if name == "" {
 		name = "Administrador SINALA"
@@ -43,9 +43,9 @@ func main() {
 	defer pool.Close()
 
 	_, err = pool.Exec(ctx,
-		`INSERT INTO users (id, name, email, password_hash, role)
-		 VALUES ($1, $2, $3, $4, 'ADMIN')
-		 ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, password_hash = EXCLUDED.password_hash, role = 'ADMIN'`,
+		`INSERT INTO users (id, name, email, password_hash, role, email_verified_at)
+		 VALUES ($1, $2, $3, $4, 'ADMIN', NOW())
+		 ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, password_hash = EXCLUDED.password_hash, role = 'ADMIN', email_verified_at = NOW()`,
 		uuid.New(), name, email, string(passwordHash),
 	)
 	if err != nil {

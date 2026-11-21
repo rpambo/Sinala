@@ -28,10 +28,10 @@
               }
             ],
             "styles": [
-              "src/uikit.less",
               "node_modules/leaflet/dist/leaflet.css",
               "src/app/features/public/home.css",
               "src/app/features/public/report-incident.css",
+              "src/app/features/public/incidents.css",
               "src/styles.css"
             ]
           },
@@ -51,8 +51,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "8kB",
+                  "maximumError": "16kB"
                 }
               ],
               "outputHashing": "all"
@@ -95,10 +95,10 @@
               }
             ],
             "styles": [
-              "src/uikit.less",
               "node_modules/leaflet/dist/leaflet.css",
               "src/app/features/public/home.css",
               "src/app/features/public/report-incident.css",
+              "src/app/features/public/incidents.css",
               "src/styles.css"
             ]
           }

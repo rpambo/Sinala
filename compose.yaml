@@ -42,6 +42,14 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       SESSION_TTL: ${SESSION_TTL:-168h}
       TRUST_PROXY: "true"
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL:-${WEB_ORIGIN:-http://localhost:8080}}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      VERIFICATION_TOKEN_TTL: ${VERIFICATION_TOKEN_TTL:-24h}
+      RECOVERY_TOKEN_TTL: ${RECOVERY_TOKEN_TTL:-30m}
     expose:
       - "3000"
     healthcheck:

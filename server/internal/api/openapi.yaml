@@ -9,14 +9,21 @@ servers:
   - url: /
 tags:
   - name: Health
+    description: Estado da API e especificação
   - name: Authentication
+    description: Sessões e autenticação de cidadãos
   - name: Incidents
+    description: Submissão e consulta pública de reportes
   - name: Account
+    description: Dados do cidadão autenticado
   - name: Administration
+    description: Operações restritas a administradores
+security: []
 paths:
   /api/health:
     get:
       tags: [Health]
+      operationId: checkHealth
       summary: Verifica a API e a ligação à base de dados
       responses:
         "200":
@@ -30,6 +37,7 @@ paths:
   /api/openapi.yaml:
     get:
       tags: [Health]
+      operationId: getOpenApi
       summary: Obtém esta especificação OpenAPI
       responses:
         "200":
@@ -41,6 +49,7 @@ paths:
   /api/auth/session:
     get:
       tags: [Authentication]
+      operationId: getSession
       summary: Consulta a sessão atual
       description: Devolve null quando não existe uma sessão autenticada.
       responses:
@@ -49,6 +58,7 @@ paths:
           content:
             application/json:
               schema:
+                type: object
                 allOf:
                   - $ref: "#/components/schemas/User"
                 nullable: true
@@ -57,8 +67,11 @@ paths:
   /api/auth/login:
     post:
       tags: [Authentication]
+      operationId: login
       summary: Inicia sessão
-      description: Define um cookie de sessão HttpOnly após autenticação bem-sucedida.
+      description: |
+        Define um cookie de sessão HttpOnly após autenticação bem-sucedida.
+        Devolve 403 com code=EMAIL_NOT_VERIFIED quando a conta ainda não confirmou o email.
       requestBody:
         required: true
         content:
@@ -89,8 +102,11 @@ paths:
   /api/auth/register:
     post:
       tags: [Authentication]
+      operationId: register
       summary: Regista uma conta de cidadão
-      description: O registo público nunca cria contas administrativas.
+      description: |
+        O registo público nunca cria contas administrativas. A conta fica por activar
+        até o endereço de email ser confirmado através de /api/auth/verify.
       requestBody:
         required: true
         content:
@@ -98,12 +114,12 @@ paths:
             schema:
               $ref: "#/components/schemas/Registration"
       responses:
-        "201":
-          description: Conta criada e sessão iniciada
+        "202":
+          description: Conta criada; email de verificação enviado
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/AuthMessage"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -118,9 +134,18 @@ paths:
           $ref: "#/components/responses/TooManyRequests"
         "500":
           $ref: "#/components/responses/ServerError"
+        "502":
+          description: Não foi possível enviar o email de verificação
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
   /api/auth/logout:
     post:
       tags: [Authentication]
+      operationId: logout
       summary: Termina a sessão atual
       responses:
         "204":
@@ -129,11 +154,43 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/ServerError"
-  /api/auth/recovery:
+  /api/auth/verify:
     post:
       tags: [Authentication]
-      summary: Solicita recuperação de palavra-passe
-      description: Não disponível até ser configurado um serviço de email.
+      operationId: verifyEmail
+      summary: Confirma o endereço de email
+      description: Consome o token do link enviado no registo e inicia sessão.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TokenRequest"
+      responses:
+        "200":
+          description: Email confirmado e sessão iniciada
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/auth/verification/resend:
+    post:
+      tags: [Authentication]
+      operationId: resendVerification
+      summary: Reenvia o email de verificação
+      description: Resposta genérica, independentemente de a conta existir.
       requestBody:
         required: true
         content:
@@ -146,19 +203,75 @@ paths:
                   type: string
                   format: email
       responses:
-        "501":
-          description: Recuperação de palavra-passe não configurada
+        "202":
+          description: Pedido aceite
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/AuthMessage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "403":
           $ref: "#/components/responses/Forbidden"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+  /api/auth/recovery:
+    post:
+      tags: [Authentication]
+      operationId: requestPasswordRecovery
+      summary: Solicita recuperação de palavra-passe
+      description: Resposta genérica, independentemente de a conta existir. O link é válido por 30 minutos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        "202":
+          description: Pedido aceite
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthMessage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+  /api/auth/reset:
+    post:
+      tags: [Authentication]
+      operationId: resetPassword
+      summary: Define uma nova palavra-passe
+      description: Consome o token de recuperação e revoga todas as sessões da conta.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordReset"
+      responses:
+        "204":
+          description: Palavra-passe alterada
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/ServerError"
   /api/incidents:
     get:
       tags: [Incidents]
+      operationId: listPublicIncidents
       summary: Lista reportes públicos
       description: Detalhes da descrição e bairro são omitidos nas respostas públicas.
       responses:
@@ -174,6 +287,7 @@ paths:
           $ref: "#/components/responses/ServerError"
     post:
       tags: [Incidents]
+      operationId: createIncident
       summary: Submete um reporte de conectividade
       description: Aceita envio anónimo ou associa o reporte à sessão autenticada.
       requestBody:
@@ -198,6 +312,7 @@ paths:
   /api/incidents/{reference}:
     get:
       tags: [Incidents]
+      operationId: getIncident
       summary: Consulta um reporte pela referência
       parameters:
         - $ref: "#/components/parameters/Reference"
@@ -217,6 +332,7 @@ paths:
   /api/account/incidents:
     get:
       tags: [Account]
+      operationId: listAccountIncidents
       summary: Lista os reportes do utilizador autenticado
       security:
         - sessionCookie: []
@@ -236,6 +352,7 @@ paths:
   /api/admin/incidents:
     get:
       tags: [Administration]
+      operationId: listAdminIncidents
       summary: Lista todos os reportes com detalhes
       security:
         - sessionCookie: []
@@ -257,6 +374,7 @@ paths:
   /api/admin/incidents/{reference}/status:
     patch:
       tags: [Administration]
+      operationId: updateIncidentStatus
       summary: Actualiza o estado de um reporte
       security:
         - sessionCookie: []
@@ -288,6 +406,7 @@ paths:
   /api/admin/incidents/{reference}/attachment:
     get:
       tags: [Administration]
+      operationId: downloadIncidentAttachment
       summary: Descarrega o anexo privado de um reporte
       security:
         - sessionCookie: []
@@ -380,6 +499,10 @@ components:
       properties:
         error:
           type: string
+        code:
+          type: string
+          description: Código legível por máquina para tratamento no cliente
+          example: EMAIL_NOT_VERIFIED
     User:
       type: object
       required: [id, name, email, role]
@@ -405,8 +528,36 @@ components:
         password:
           type: string
           format: password
+          description: Entre 8 e 72 bytes (limite do bcrypt)
           minLength: 8
-          maxLength: 128
+          maxLength: 72
+    TokenRequest:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+          pattern: "^[0-9a-f]{64}$"
+    PasswordReset:
+      allOf:
+        - $ref: "#/components/schemas/TokenRequest"
+        - type: object
+          required: [password]
+          properties:
+            password:
+              type: string
+              format: password
+              minLength: 8
+              maxLength: 72
+    AuthMessage:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+        email:
+          type: string
+          format: email
     Registration:
       allOf:
         - $ref: "#/components/schemas/Credentials"
